@@ -6,7 +6,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        // Create the Stopwatch object
+        // the Stopwatch object
         var stopwatch = new Stopwatch();
 
         // Subscribe to events
@@ -42,7 +42,7 @@ class Program
             else if (input == ConsoleKey.Q)
             {
                 stopwatch.Stop();
-                displayTokenSource.Cancel(); // Stop the real-time display
+                displayTokenSource.Cancel(); 
                 break;
             }
         }
@@ -59,7 +59,7 @@ class Program
                 Console.WriteLine($"Current Time: {TimeFormatter.FormatTime(stopwatch.TimeElapsed)}");
                 Console.WriteLine($"Stopwatch Running: {stopwatch.IsRunning}");
                 Console.WriteLine("Press 'S' to Start, 'T' to Stop, 'R' to Reset, 'Q' to Quit.");
-                Thread.Sleep(500); // Refresh every 500 milliseconds
+                Thread.Sleep(500); // refresh every 500 milliseconds
             }
         }, token);
     }

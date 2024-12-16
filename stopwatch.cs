@@ -54,12 +54,11 @@ public class Stopwatch
 
     private void StartTicking(CancellationToken token)
     {
-        // Run ticking on a separate thread
         Task.Run(() =>
         {
             while (!token.IsCancellationRequested)
             {
-                Thread.Sleep(1000);  // 1 second delay
+                Thread.Sleep(1000); 
                 _timeElapsed = _timeElapsed.Add(TimeSpan.FromSeconds(1));
             }
         }, token);
