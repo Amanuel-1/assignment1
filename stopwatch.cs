@@ -1,11 +1,13 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 public class Stopwatch
 {
     // Fields
     private TimeSpan _timeElapsed;
     private bool _isRunning;
+    private CancellationTokenSource _cancellationTokenSource;
 
     // Events
     public event StopwatchEventHandler OnStarted;
@@ -25,8 +27,9 @@ public class Stopwatch
         if (!_isRunning)
         {
             _isRunning = true;
+            _cancellationTokenSource = new CancellationTokenSource();
             OnStarted?.Invoke("Stopwatch Started!");
-            StartTicking();
+            StartTicking(_cancellationTokenSource.Token);
         }
     }
 
@@ -35,23 +38,30 @@ public class Stopwatch
         if (_isRunning)
         {
             _isRunning = false;
+            _cancellationTokenSource.Cancel();
             OnStopped?.Invoke($"Stopwatch Stopped! Time elapsed: {_timeElapsed.TotalSeconds} seconds.");
         }
     }
 
     public void Reset()
     {
+        if (_isRunning)
+            Stop();
+
         _timeElapsed = TimeSpan.Zero;
         OnReset?.Invoke("Stopwatch Reset!");
     }
 
-    private void StartTicking()
+    private void StartTicking(CancellationToken token)
     {
-        // Simulate ticking every second when the stopwatch is running
-        while (_isRunning)
+        // Run ticking on a separate thread
+        Task.Run(() =>
         {
-            Thread.Sleep(1000);  // 1 second delay
-            _timeElapsed = _timeElapsed.Add(TimeSpan.FromSeconds(1));
-        }
+            while (!token.IsCancellationRequested)
+            {
+                Thread.Sleep(1000);  // 1 second delay
+                _timeElapsed = _timeElapsed.Add(TimeSpan.FromSeconds(1));
+            }
+        }, token);
     }
 }

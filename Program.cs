@@ -1,4 +1,6 @@
-using System;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 class Program
 {
@@ -12,14 +14,15 @@ class Program
         stopwatch.OnStopped += message => Console.WriteLine(message);
         stopwatch.OnReset += message => Console.WriteLine(message);
 
+        // Start the real-time display task
+        var displayTokenSource = new CancellationTokenSource();
+        StartRealTimeDisplay(stopwatch, displayTokenSource.Token);
+
         // Main loop for user input
         while (true)
         {
-            Console.Clear();
             Console.WriteLine("Stopwatch Application");
             Console.WriteLine("Press 'S' to Start, 'T' to Stop, 'R' to Reset.");
-            Console.WriteLine($"Current Time: {stopwatch.TimeElapsed.Seconds} seconds");
-            Console.WriteLine($"Stopwatch Running: {stopwatch.IsRunning}");
             Console.WriteLine("Press 'Q' to Quit.");
 
             var input = Console.ReadKey(true).Key;
@@ -38,8 +41,26 @@ class Program
             }
             else if (input == ConsoleKey.Q)
             {
+                stopwatch.Stop();
+                displayTokenSource.Cancel(); // Stop the real-time display
                 break;
             }
         }
+    }
+
+    static void StartRealTimeDisplay(Stopwatch stopwatch, CancellationToken token)
+    {
+        Task.Run(() =>
+        {
+            while (!token.IsCancellationRequested)
+            {
+                Console.Clear();
+                Console.WriteLine("Stopwatch Application");
+                Console.WriteLine($"Current Time: {TimeFormatter.FormatTime(stopwatch.TimeElapsed)}");
+                Console.WriteLine($"Stopwatch Running: {stopwatch.IsRunning}");
+                Console.WriteLine("Press 'S' to Start, 'T' to Stop, 'R' to Reset, 'Q' to Quit.");
+                Thread.Sleep(500); // Refresh every 500 milliseconds
+            }
+        }, token);
     }
 }
